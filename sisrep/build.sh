@@ -4,5 +4,5 @@ set -o errexit
 
 pip install -r sisrep/requirements.txt
 
-python manage.py collecstatic --noinput
-python manage.py migrate
+python sisrep/manage.py collecstatic --noinput
+python sisrep/manage.py migrate
