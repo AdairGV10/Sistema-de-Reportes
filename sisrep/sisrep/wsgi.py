@@ -11,7 +11,7 @@ import os
 from django.core.wsgi import get_wsgi_application
 
 # Establece el módulo de configuración de Django
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sisrep.settings')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sisrep.sisrep.settings')
 
 application = get_wsgi_application()
 
