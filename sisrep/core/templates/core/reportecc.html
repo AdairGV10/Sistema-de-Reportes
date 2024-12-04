@@ -716,7 +716,7 @@
         <script>
             document.getElementById('exportButton').addEventListener('click', async function () {
                 const workbook = new ExcelJS.Workbook();
-        
+        // agregue permisos
                 // Crear la hoja principal
                 const worksheetCC = workbook.addWorksheet('Reporte Call-Center');
                 let currentRowCC = 1;
