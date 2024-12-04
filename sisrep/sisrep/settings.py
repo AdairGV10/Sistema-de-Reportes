@@ -78,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'sisrep.wsgi.application'
+WSGI_APPLICATION = 'sisrep.sisrep.wsgi.application'
 
 
 # Database
