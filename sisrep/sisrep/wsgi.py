@@ -12,7 +12,7 @@ import sys
 from django.core.wsgi import get_wsgi_application
 
 # Agregar el directorio al PYTHONPATH
-sys.path.append(os.path.join(os.path.dirname(__file__), 'core'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'sisrep'))
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'sisrep.sisrep.settings')
 
