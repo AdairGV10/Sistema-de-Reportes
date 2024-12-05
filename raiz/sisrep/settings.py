@@ -58,7 +58,7 @@ MIDDLEWARE = [
 ]
 
 
-ROOT_URLCONF = 'urls'
+ROOT_URLCONF = 'sisrep.urls'
 
 TEMPLATES = [
     {
