@@ -3,8 +3,14 @@
 set -o errexit
 
 #!/bin/bash
-cd ../   # Cambia al directorio raíz del proyecto, fuera de 'sisrep/'
+
+# Si estás en el directorio raiz/ (donde está build.sh y requirements.txt)
+# Primero, instala las dependencias desde el archivo requirements.txt
 pip install -r requirements.txt
-cd sisrep  # Regresa a sisrep para ejecutar los siguientes comandos
+
+# Luego, navega al directorio sisrep/ donde está el proyecto Django
+cd sisrep
+
+# Ejecuta los comandos de Django
 python manage.py collectstatic --noinput
 python manage.py migrate
