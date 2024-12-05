@@ -8,8 +8,6 @@ set -o errexit
 # Primero, instala las dependencias desde el archivo requirements.txt
 pip install -r requirements.txt
 
-# Luego, navega al directorio sisrep/ donde está el proyecto Django
-cd sisrep
 
 # Ejecuta los comandos de Django
 python manage.py collectstatic --noinput
