@@ -1,0 +1,815 @@
+{% extends "core/base.html" %}
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>MSJ Whaticket</title>
+    <link rel="stylesheet" href="{% static 'css/styleb.css' %}">
+    <script src="path/to/your/script.js" defer></script>
+</head>
+{% block content %}
+    {% if request.user.is_authenticated %}
+        <!-- Encabezado y menú -->
+        <header class="header">
+            <div class="container">
+                <div class="btn-menu">
+                    <label for="btn-menu">☰</label>
+                </div>
+                <div class="logo">
+                    <h4>Bienvenido {{ user.username | upper }}</h4>
+                </div>
+                <div class="image-menu">
+                    <img src = "{% static "Images/LogoBlancoTC.png" %}" alt="Telecable">
+                </div>
+                <nav class="menu">
+                    <a href="#">Inicio</a>
+                    <a href="#">Nosotros</a>
+                    <a href="#">Blog</a>
+                    <a>
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit">Cerrar sesión</button>
+                        </form>
+                    </a>
+                </nav>
+            </div>
+        </header>
+        <!-- Menú desplegable -->
+        <div class="capa"></div>
+        <input type="checkbox" id="btn-menu">
+        <div class="container-menu">
+            <div class="cont-menu">
+                <nav>
+                    <a href="{% url 'home' %}">Principal</a>
+                    <a href="{% url 'personalcc' %}">Personal CallCenter</a>
+                    <a href="{% url 'generate_report' %}">Reporte CallCenter</a>
+                    <a href="{% url 'whaticket' %}">MSJ Whaticket</a>
+                    <a href="{% url 'redessociales' %}">Redes Sociales</a>
+                    <a href="{% url 'ventascc' %}">Ventas CallCenter</a>
+                    <a href="{% url 'ventasvirtuales' %}">Ventas Virtuales</a>
+                    <a href="{% url 'personal_cajero' %}">Personal Cajero</a>
+                    <a href="{% url 'reportecaja' %}">Reporte Caja</a>
+                </nav>
+                <label for="btn-menu">✖️</label>
+            </div>
+        </div>
+        <br>
+        <body>
+            <p class="p3">MSJ Whaticket</p>
+            <div class="container-whaticket">
+                <form id="formulario_chats" method="post">
+                    <div class="form-group">
+                        <label for="personalSelect">Seleccionar Personal:</label>
+                        <select id="personalSelect" class="form-control">
+                            {% for personal in personal_list %}
+                                <option value="{{ personal.id }}">{{ personal.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </form>
+
+                <h3>Zona Xaltianguis</h3>
+                <table id="tabla_xaltianguis" class="table table-striped customers">
+                    <thead>
+                        <tr>
+                            <th>SUCURSAL</th>
+                            <th>CHATS CREADOS</th>
+                            <th>CHATS RESUELTOS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Jacala</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>San Agustin Tlaxiaca</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>San Jose Tepenene</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Actopan</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Actopan Colonias</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Progreso</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Progreso Colonias</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Mixquiahuala</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Tlahuelilpan</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Apaxco Azul</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Tequixquiac</td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="xaltianguis_chats_resueltos[]" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Zona Tlaxcoapan</h3>
+                <table id="tabla_tlaxcoapan" class="table table-striped customers">
+                    <thead>
+                        <tr>
+                            <th>SUCURSAL</th>
+                            <th>CHATS CREADOS</th>
+                            <th>CHATS RESUELTOS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tlaxcoapan</td>
+                            <td><input type="number" class="form-control" name="tlaxcoapan_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="tlaxcoapan_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Atitalaquia</td>
+                            <td><input type="number" class="form-control" name="tlaxcoapan_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="tlaxcoapan_chats_resueltos[]" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3>Zona Tula de Allende</h3>
+                <table id="tabla_tula" class="table table-striped customers">
+                    <thead>
+                        <tr>
+                            <th>SUCURSAL</th>
+                            <th>CHATS CREADOS</th>
+                            <th>CHATS RESUELTOS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Tezontepec</td>
+                            <td><input type="number" class="form-control" name="tula_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="tula_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Tula de Allende</td>
+                            <td><input type="number" class="form-control" name="tula_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="tula_chats_resueltos[]" /></td>
+                        </tr>
+                        <tr>
+                            <td>Apaxco Teleimagen</td>
+                            <td><input type="number" class="form-control" name="tula_chats_creados[]" /></td>
+                            <td><input type="number" class="form-control" name="tula_chats_resueltos[]" /></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <button id="agregarBtn" class="btn btn-success">Agregar</button>
+                <button id="limpiarDatosBtn" class="btn btn-danger">Limpiar Datos</button>
+            </div>
+            <div id="resultadosContenedor" class="container-whaticket"></div>
+
+            <div id="resultadosResumidos" class="container-whaticket2">
+                <h3>Resumen por Zona</h3>
+                <div id="resumen_xaltianguis">
+                    <h4>ZONA XALTIANGUIS</h4>
+                    <table id="tabla_xaltianguis_resumen" class="table table-striped table-custom">
+                        <thead>
+                            <tr>
+                                <th>SUCURSAL</th>
+                                <th>CHATS CREADOS</th>
+                                <th>CHATS RESUELTOS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <canvas id="grafico_xaltianguis_resumen" width="400" height="200"></canvas>
+                </div>
+                <div id="resumen_tlaxcoapan">
+                    <h4>ZONA TLAXCOAPAN</h4>
+                    <table id="tabla_tlaxcoapan_resumen" class="table table-striped table-custom">
+                        <thead>
+                            <tr>
+                                <th>SUCURSAL</th>
+                                <th>CHATS CREADOS</th>
+                                <th>CHATS RESUELTOS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <canvas id="grafico_tlaxcoapan_resumen" width="400" height="200"></canvas>
+                </div>
+                <div id="resumen_tula">
+                    <h4>ZONA TULA DE ALLENDE</h4>
+                    <table id="tabla_tula_resumen" class="table table-striped table-custom">
+                        <thead>
+                            <tr>
+                                <th>SUCURSAL</th>
+                                <th>CHATS CREADOS</th>
+                                <th>CHATS RESUELTOS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <canvas id="grafico_tula_resumen" width="400" height="200"></canvas>
+                </div>
+
+                <div id="resumen_totales">
+                    <h3>Total de Chats por Zona</h3>
+                    <table id="tabla_totales" class="table table-striped table-custom">
+                        <thead>
+                            <tr>
+                                <th>ZONA</th>
+                                <th>CHATS CREADOS</th>
+                                <th>CHATS RESUELTOS</th>
+                                <th>TOTAL DE MENSAJES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>XALTIANGUIS</td>
+                                <td id="total_xaltianguis_creados">0</td>
+                                <td id="total_xaltianguis_resueltos">0</td>
+                                <td id="total_xaltianguis_mensajes">0</td>
+                            </tr>
+                            <tr>
+                                <td>TLAXCOAPAN</td>
+                                <td id="total_tlaxcoapan_creados">0</td>
+                                <td id="total_tlaxcoapan_resueltos">0</td>
+                                <td id="total_tlaxcoapan_mensajes">0</td>
+                            </tr>
+                            <tr>
+                                <td>TULA DE ALLENDE</td>
+                                <td id="total_tula_creados">0</td>
+                                <td id="total_tula_resueltos">0</td>
+                                <td id="total_tula_mensajes">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <canvas id="grafico_totales" width="600" height="300"></canvas>
+                </div>
+                <button id="añadirReporteBtn" onclick="añadirResumenZonaAlReporteGeneral()" class="btngenerar">Añadir al reporte general</button>
+            </div>
+
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+            <script>
+
+                function actualizarTotales() {
+                    function sumarTotales(selector) {
+                        var totalCreados = 0;
+                        var totalResueltos = 0;
+                        
+                        $(selector).each(function() {
+                            var creados = parseInt($(this).find('td').eq(1).text()) || 0;
+                            var resueltos = parseInt($(this).find('td').eq(2).text()) || 0;
+                            totalCreados += creados;
+                            totalResueltos += resueltos;
+                        });
+                        
+                        return {
+                            creados: totalCreados,
+                            resueltos: totalResueltos
+                        };
+                    }
+                
+                    // Sumar totales para cada zona
+                    var totalesXaltianguis = sumarTotales('#tabla_xaltianguis_resumen tbody tr');
+                    var totalesTlaxcoapan = sumarTotales('#tabla_tlaxcoapan_resumen tbody tr');
+                    var totalesTula = sumarTotales('#tabla_tula_resumen tbody tr');
+                
+                    // Actualizar la tabla_totales con los totales
+                    $('#total_xaltianguis_creados').text(totalesXaltianguis.creados);
+                    $('#total_xaltianguis_resueltos').text(totalesXaltianguis.resueltos);
+                    $('#total_tlaxcoapan_creados').text(totalesTlaxcoapan.creados);
+                    $('#total_tlaxcoapan_resueltos').text(totalesTlaxcoapan.resueltos);
+                    $('#total_tula_creados').text(totalesTula.creados);
+                    $('#total_tula_resueltos').text(totalesTula.resueltos);
+                    
+                    // Calcular y mostrar el total de mensajes
+                    $('#total_xaltianguis_mensajes').text(totalesXaltianguis.creados + totalesXaltianguis.resueltos);
+                    $('#total_tlaxcoapan_mensajes').text(totalesTlaxcoapan.creados + totalesTlaxcoapan.resueltos);
+                    $('#total_tula_mensajes').text(totalesTula.creados + totalesTula.resueltos);
+                }
+
+
+                $(document).ready(function() {
+                    function crearGrafico(idCanvas, labels, datos) {
+                        const canvas = document.getElementById(idCanvas);
+                    
+                        // Verificar si el canvas existe
+                        if (!canvas) {
+                            console.error(`Canvas con ID "${idCanvas}" no encontrado. Gráfico no será generado.`);
+                            return;
+                        }
+                    
+                        const ctx = canvas.getContext('2d');
+                    
+                        if (ctx.chart) {
+                            ctx.chart.data.labels = labels;
+                            ctx.chart.data.datasets[0].data = datos;
+                            ctx.chart.update();
+                        } else {
+                            ctx.chart = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Chats Creados y Resueltos',
+                                        data: datos,
+                                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                        borderColor: 'rgba(54, 162, 235, 1)',
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    
+                    //grafico totales
+                    function crearGraficoTotales(idCanvas, labels, datos) {
+                        var ctx = document.getElementById(idCanvas).getContext('2d');
+
+                        // Si el gráfico ya existe, actualízalo
+                        if (ctx.chart) {
+                            ctx.chart.data.labels = labels;
+                            ctx.chart.data.datasets[0].data = datos;
+                            ctx.chart.update();
+                        } else {
+                            // Si el gráfico no existe, créalo
+                            ctx.chart = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Total de Mensajes',
+                                        data: datos,
+                                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                                        borderColor: 'rgba(54, 162, 235, 1)',
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    //fin grafico totales
+                    function actualizarGraficos() {
+                        // Zona Xaltianguis
+                        var sucursalesXaltianguis = [];
+                        var datosXaltianguis = [];
+                        $('#tabla_xaltianguis tbody tr').each(function() {
+                            var sucursal = $(this).find('td').eq(0).text();
+                            var creados = parseInt($(this).find('td').eq(1).text()) || 0;
+                            var resueltos = parseInt($(this).find('td').eq(2).text()) || 0;
+                            sucursalesXaltianguis.push(sucursal);
+                            datosXaltianguis.push(creados + resueltos);
+                        });
+                        crearGrafico('grafico_xaltianguis', sucursalesXaltianguis, datosXaltianguis);
+                
+                        // Zona Tlaxcoapan
+                        var sucursalesTlaxcoapan = [];
+                        var datosTlaxcoapan = [];
+                        $('#tabla_tlaxcoapan tbody tr').each(function() {
+                            var sucursal = $(this).find('td').eq(0).text();
+                            var creados = parseInt($(this).find('td').eq(1).text()) || 0;
+                            var resueltos = parseInt($(this).find('td').eq(2).text()) || 0;
+                            sucursalesTlaxcoapan.push(sucursal);
+                            datosTlaxcoapan.push(creados + resueltos);
+                        });
+                        crearGrafico('grafico_tlaxcoapan', sucursalesTlaxcoapan, datosTlaxcoapan);
+                
+                        // Zona Tula de Allende
+                        var sucursalesTula = [];
+                        var datosTula = [];
+                        $('#tabla_tula tbody tr').each(function() {
+                            var sucursal = $(this).find('td').eq(0).text();
+                            var creados = parseInt($(this).find('td').eq(1).text()) || 0;
+                            var resueltos = parseInt($(this).find('td').eq(2).text()) || 0;
+                            sucursalesTula.push(sucursal);
+                            datosTula.push(creados + resueltos);
+                        });
+                        crearGrafico('grafico_tula', sucursalesTula, datosTula);
+                    }
+
+                    function actualizarGraficosResumen() {
+                        // Resumen Xaltianguis
+                        var sucursalesXaltianguisResumen = [];
+                        var datosXaltianguisResumen = [];
+                        $('#tabla_xaltianguis_resumen tbody tr').each(function() {
+                            var sucursal = $(this).find('td').eq(0).text();
+                            var creados = parseInt($(this).find('td').eq(1).text()) || 0;
+                            var resueltos = parseInt($(this).find('td').eq(2).text()) || 0;
+                            sucursalesXaltianguisResumen.push(sucursal);
+                            datosXaltianguisResumen.push(creados + resueltos);
+                        });
+                        crearGrafico('grafico_xaltianguis_resumen', sucursalesXaltianguisResumen, datosXaltianguisResumen);
+
+                        // Resumen Tlaxcoapan
+                        var sucursalesTlaxcoapanResumen = [];
+                        var datosTlaxcoapanResumen = [];
+                        $('#tabla_tlaxcoapan_resumen tbody tr').each(function() {
+                            var sucursal = $(this).find('td').eq(0).text();
+                            var creados = parseInt($(this).find('td').eq(1).text()) || 0;
+                            var resueltos = parseInt($(this).find('td').eq(2).text()) || 0;
+                            sucursalesTlaxcoapanResumen.push(sucursal);
+                            datosTlaxcoapanResumen.push(creados + resueltos);
+                        });
+                        crearGrafico('grafico_tlaxcoapan_resumen', sucursalesTlaxcoapanResumen, datosTlaxcoapanResumen);
+
+                        // Resumen Tula de Allende
+                        var sucursalesTulaResumen = [];
+                        var datosTulaResumen = [];
+                        $('#tabla_tula_resumen tbody tr').each(function() {
+                            var sucursal = $(this).find('td').eq(0).text();
+                            var creados = parseInt($(this).find('td').eq(1).text()) || 0;
+                            var resueltos = parseInt($(this).find('td').eq(2).text()) || 0;
+                            sucursalesTulaResumen.push(sucursal);
+                            datosTulaResumen.push(creados + resueltos);
+                        });
+                        crearGrafico('grafico_tula_resumen', sucursalesTulaResumen, datosTulaResumen);
+
+                        // Gráfica de Totales
+                        var zonasTotales = ['XALTIANGUIS', 'TLAXCOAPAN', 'TULA DE ALLENDE'];
+                        var totalMensajesTotales = [
+                            parseInt($('#total_xaltianguis_mensajes').text()) || 0,
+                            parseInt($('#total_tlaxcoapan_mensajes').text()) || 0,
+                            parseInt($('#total_tula_mensajes').text()) || 0
+                        ];
+                        crearGraficoTotales('grafico_totales', zonasTotales, totalMensajesTotales);
+                    }
+
+                    function sumarValores(selector) {
+                        var total = 0;
+                        $(selector).each(function() {
+                            total += parseInt($(this).val()) || 0;
+                        });
+                        return total;
+                    }
+
+                    function agregarFila(zona, personal, chatsCreados, chatsResueltos) {
+                        const totalMensajes = chatsCreados + chatsResueltos;
+                        const tablaId = `tabla_${zona.replace(/\s+/g, '_')}`;
+                        const canvasId = `grafico_${zona.replace(/\s+/g, '_')}`;
+                        
+                        if (!$(`#${tablaId}`).length) {
+                            const tablaHtml = `
+                                <table id="${tablaId}" class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>PERSONAL</th>
+                                            <th>CHATS CREADOS</th>
+                                            <th>CHATS RESUELTOS</th>
+                                            <th>TOTAL DE MENSAJES</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                                <canvas id="${canvasId}" width="400" height="200"></canvas>`;
+                            $('#resultadosContenedor').append(tablaHtml);
+                        }
+                    
+                        $(`#${tablaId} tbody`).append(`
+                            <tr>
+                                <td>${personal}</td>
+                                <td>${chatsCreados}</td>
+                                <td>${chatsResueltos}</td>
+                                <td>${totalMensajes}</td>
+                            </tr>`);
+                    
+                        // Actualizar el gráfico
+                        actualizarGrafico(zona.replace(/\s+/g, '_'));
+                    }
+                    
+                    
+
+                    function actualizarGrafico() {
+                        $('#resultadosContenedor > table').each(function () {
+                            const zona = $(this).attr('id').replace('tabla_', '').replace(/_/g, ' ');
+                            const canvasId = `grafico_${zona.replace(/\s+/g, '_')}`;
+                            console.log(`Intentando actualizar gráfico con ID: ${canvasId}`);
+                    
+                            const labels = [];
+                            const datos = [];
+                    
+                            // Recopilar datos de la tabla correspondiente
+                            $(this).find('tbody tr').each(function () {
+                                const personal = $(this).find('td').eq(0).text();
+                                const creados = parseInt($(this).find('td').eq(1).text()) || 0;
+                                const resueltos = parseInt($(this).find('td').eq(2).text()) || 0;
+                                labels.push(personal);
+                                datos.push(creados + resueltos);
+                            });
+                    
+                            // Intentar crear el gráfico
+                            crearGrafico(canvasId, labels, datos);
+                        });
+                    }
+                    
+
+                    function actualizarResumidos() {
+                        function sumarPorSucursal(zona) {
+                            var resultados = {};
+                            $('#tabla_' + zona + ' tbody tr').each(function() {
+                                var sucursal = $(this).find('td').eq(0).text().trim();
+                                var creados = parseInt($(this).find('td').eq(1).find('input').val()) || 0;
+                                var resueltos = parseInt($(this).find('td').eq(2).find('input').val()) || 0;
+                    
+                                if (!resultados[sucursal]) {
+                                    resultados[sucursal] = { creados: 0, resueltos: 0 };
+                                }
+
+                                resultados[sucursal].creados += creados;
+                                resultados[sucursal].resueltos += resueltos;
+                            });
+
+                            return resultados;
+                        }
+
+                        function actualizarTablaResumen(zona, datos) {
+                            $.each(datos, function(sucursal, valores) {
+                                agregarFila_resumen(zona, sucursal, valores.creados, valores.resueltos);
+                            });
+                        }
+
+                        // Obtén los datos resumidos para cada zona
+                        var datosXaltianguis = sumarPorSucursal('xaltianguis');
+                        var datosTlaxcoapan = sumarPorSucursal('tlaxcoapan');
+                        var datosTula = sumarPorSucursal('tula');
+
+                        // Actualiza las tablas de resumen con los datos
+                        actualizarTablaResumen('xaltianguis', datosXaltianguis);
+                        actualizarTablaResumen('tlaxcoapan', datosTlaxcoapan);
+                        actualizarTablaResumen('tula', datosTula);
+                        actualizarTotales();
+                    }
+
+                    function guardarDatos() {
+                            // Guarda los datos en el localStorage para las tablas de resultados
+                        $('#resultadosContenedor').find('table').each(function() {
+                            var zona = $(this).attr('id').replace('tabla_', '');
+                            var filas = [];
+                            $(this).find('tbody tr').each(function() {
+                                var personal = $(this).find('td').eq(0).text();
+                                var creados = $(this).find('td').eq(1).text();
+                                var resueltos = $(this).find('td').eq(2).text();
+                                filas.push({ personal: personal, creados: creados, resueltos: resueltos });
+                            });
+                            localStorage.setItem('datos_' + zona, JSON.stringify(filas));
+                        });
+                    
+                        // Guarda los datos en el localStorage para las tablas de resumen
+                        $('#resultadosResumidos').find('table').each(function() {
+                            var zona = $(this).attr('id').replace('tabla_', '');
+                            var filas = [];
+                            $(this).find('tbody tr').each(function() {
+                                var personal = $(this).find('td').eq(0).text();
+                                var creados = $(this).find('td').eq(1).text();
+                                var resueltos = $(this).find('td').eq(2).text();
+                                filas.push({ personal: personal, creados: creados, resueltos: resueltos });
+                            });
+                            localStorage.setItem('datos_' + zona + '_resumen', JSON.stringify(filas));
+                        });
+                    }
+
+                    function cargarDatos() {
+                        $('#resultadosContenedor').find('table').each(function() {
+                            var zona = $(this).attr('id').replace('tabla_', '');
+                            var filasGuardadas = JSON.parse(localStorage.getItem('datos_' + zona));
+                            if (filasGuardadas) {
+                                filasGuardadas.forEach(function(fila) {
+                                    var filaHtml = `<tr>
+                                                        <td>${fila.personal}</td>
+                                                        <td>${fila.creados}</td>
+                                                        <td>${fila.resueltos}</td>
+                                                        <td>${parseInt(fila.creados) + parseInt(fila.resueltos)}</td>
+                                                      </tr>`;
+                                    $(this).find('tbody').append(filaHtml);
+                                });
+                            }
+                        });
+                    }
+
+                    function validarEntrada(selector) {
+                        var valido = true;
+                        $(selector).each(function() {
+                            var creados = parseInt($(this).find('td').eq(1).text()) || 0;
+                            var resueltos = parseInt($(this).find('td').eq(2).text()) || 0;
+                            if (isNaN(creados) || isNaN(resueltos)) {
+                                valido = false;
+                                alert("Por favor, ingresa valores válidos.");
+                            }
+                        });
+                        return valido;
+                    }
+
+                    function agregarFila_resumen(zona, personal, chatsCreados, chatsResueltos) {
+                        var tabla = $('#tabla_' + zona.replace(/\s+/g, '_') + '_resumen tbody');
+                        var filaExistente = tabla.find('tr').filter(function() {
+                            return $(this).find('td').eq(0).text().trim() === personal;
+                        });
+                
+                        if (filaExistente.length > 0) {
+                            var fila = filaExistente.eq(0);
+                            var creadosActuales = parseInt(fila.find('td').eq(1).text()) || 0;
+                            var resueltosActuales = parseInt(fila.find('td').eq(2).text()) || 0;
+                            fila.find('td').eq(1).text(creadosActuales + chatsCreados);
+                            fila.find('td').eq(2).text(resueltosActuales + chatsResueltos);
+                        } else {
+                            var nuevaFila = 
+                                `<tr>
+                                    <td>${personal}</td>
+                                    <td>${chatsCreados}</td>
+                                    <td>${chatsResueltos}</td>
+                                </tr>`;
+                            tabla.append(nuevaFila);
+                        }
+                
+                        // Actualizar gráfico de resumen para esta tabla
+                        actualizarGraficosResumen();
+                    }
+
+                    $('#agregarBtn').click(function() {
+                        var personal = $('#personalSelect').val();
+                        var personalText = $('#personalSelect option:selected').text();
+                        var xaltianguisChatsCreados = sumarValores('input[name="xaltianguis_chats_creados[]"]');
+                        var xaltianguisChatsResueltos = sumarValores('input[name="xaltianguis_chats_resueltos[]"]');
+                        var tlaxcoapanChatsCreados = sumarValores('input[name="tlaxcoapan_chats_creados[]"]');
+                        var tlaxcoapanChatsResueltos = sumarValores('input[name="tlaxcoapan_chats_resueltos[]"]');
+                        var tulaChatsCreados = sumarValores('input[name="tula_chats_creados[]"]');
+                        var tulaChatsResueltos = sumarValores('input[name="tula_chats_resueltos[]"]');
+
+                        agregarFila('XALTIANGUIS', personalText, xaltianguisChatsCreados, xaltianguisChatsResueltos);
+                        agregarFila('TLAXCOAPAN', personalText, tlaxcoapanChatsCreados, tlaxcoapanChatsResueltos);
+                        agregarFila('TULA DE ALLENDE', personalText, tulaChatsCreados, tulaChatsResueltos);
+
+                        actualizarResumidos();
+                        actualizarGraficosResumen();
+                        guardarDatos();
+                    });
+
+                    $('#limpiarDatosBtn').click(function() {
+                        $('#resultadosContenedor').empty();
+                        $('#resultadosResumidos').empty();
+
+                        localStorage.removeItem('tablasDatos');
+
+                        var ctxs = ['grafico_xaltianguis', 'grafico_tlaxcoapan', 'grafico_tula'];
+                        ctxs.forEach(function(ctxId) {
+                            var ctx = document.getElementById(ctxId).getContext('2d');
+                            if (ctx.chart) {
+                                ctx.chart.destroy();
+                            }
+                        });
+                    });
+                    // Inicializar datos y gráficos al cargar la página
+                    cargarDatos();
+                    actualizarResumidos();
+                    actualizarGraficos();
+
+                    window.onbeforeunload = guardarDatos;
+
+                   
+                });
+
+                function obtenerDatosDeContenedores() {
+                    const secciones = [];
+                    const graficos = {};
+                
+                    // Procesar tablas y gráficos en resultadosContenedor
+                    $('#resultadosContenedor > table').each(function () {
+                        const tablaId = $(this).attr('id');
+                        const zona = tablaId.replace('tabla_', '').replace(/_/g, ' ');
+                
+                        const datosZona = [];
+                        $(this).find('tbody tr').each(function () {
+                            const personal = $(this).find('td').eq(0).text().trim();
+                            const chatsCreados = $(this).find('td').eq(1).text().trim();
+                            const chatsResueltos = $(this).find('td').eq(2).text().trim();
+                            const totalMensajes = $(this).find('td').eq(3).text().trim();
+                            datosZona.push([personal, chatsCreados, chatsResueltos, totalMensajes]);
+                        });
+                
+                        secciones.push({
+                            titulo: `ZONA ${zona.toUpperCase()}`,
+                            datos: datosZona,
+                            contenedor: 'resultadosContenedor', // Identificar que pertenece a este contenedor
+                        });
+                
+                        // Capturar gráficos
+                        const canvasId = `grafico_${zona.replace(/\s+/g, '_')}`;
+                        const canvas = document.getElementById(canvasId);
+                
+                        if (canvas) {
+                            try {
+                                const imageData = canvas.toDataURL('image/png');
+                                graficos[`ZONA ${zona.toUpperCase()} - resultadosContenedor`] = imageData;
+                            } catch (error) {
+                                console.error(`Error capturando el gráfico para la zona ${zona}:`, error);
+                            }
+                        } else {
+                            console.warn(`No se encontró un gráfico para la zona ${zona}`);
+                        }
+                    });
+                
+                    // Procesar tablas y gráficos en resultadosResumidos
+                    $('#resultadosResumidos > div').each(function () {
+                        const zona = $(this).find('h4').text().replace('ZONA ', '').trim();
+                        const tablaId = $(this).find('table').attr('id');
+                        const canvasId = $(this).find('canvas').attr('id');
+                
+                        const datosZona = [];
+                        $(`#${tablaId} tbody tr`).each(function () {
+                            const personal = $(this).find('td').eq(0).text().trim();
+                            const chatsCreados = $(this).find('td').eq(1).text().trim();
+                            const chatsResueltos = $(this).find('td').eq(2).text().trim();
+                            datosZona.push([personal, chatsCreados, chatsResueltos]);
+                        });
+                
+                        secciones.push({
+                            titulo: `ZONA ${zona.toUpperCase()}`,
+                            datos: datosZona,
+                            contenedor: 'resultadosResumidos', // Identificar que pertenece a este contenedor
+                        });
+                
+                        // Capturar gráficos
+                        if (canvasId) {
+                            const canvas = document.getElementById(canvasId);
+                            if (canvas) {
+                                try {
+                                    const imageData = canvas.toDataURL('image/png');
+                                    graficos[`ZONA ${zona.toUpperCase()} - resultadosResumidos`] = imageData;
+                                } catch (error) {
+                                    console.error(`Error capturando el gráfico para la zona ${zona}:`, error);
+                                }
+                            }
+                        }
+                    });
+                
+                    console.log('Gráficos capturados:', graficos); // Verifica que los gráficos de ambos contenedores estén incluidos
+                    return { secciones, graficos };
+                }
+                             
+               
+                function añadirResumenZonaAlReporteGeneral() {
+                    const resumenData = obtenerDatosDeContenedores();
+                    console.log('Datos de resumen para almacenar:', resumenData); // Verificar contenido
+                
+                    const existingData = JSON.parse(localStorage.getItem('whaticketData')) || {};
+                
+                    const updatedData = {
+                        ...existingData,
+                        resumenSecciones: resumenData.secciones,
+                        graficosResumen: resumenData.graficos,
+                    };
+                
+                    localStorage.setItem('whaticketData', JSON.stringify(updatedData));
+                    console.log('Datos almacenados en localStorage:', updatedData);
+                    alert('Resumen añadido al reporte.');
+                }
+                
+            </script>
+        </body>
+    {% endif %}
+{% endblock %}

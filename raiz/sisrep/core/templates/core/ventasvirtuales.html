@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Reporte de Ventas</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    </head>
+    {% extends "core/base.html" %}
+	{% load static %}
+    	{% block content %}
+		{% if request.user.is_authenticated %}
+
+            <header class="header">
+                <div class="container">
+                    <div class="btn-menu">
+                        <label for="btn-menu">☰</label>
+                    </div>
+                    <div class="logo">
+                        <h4>Bienvenido {{ user.username | upper }}</h4>
+                    </div>
+                    <div class="image-menu">
+                        <img src = "{% static "Images/LogoBlancoTC.png" %}" alt="Telecable">
+                    </div>
+                    <nav class="menu">
+                        <a href="#">Inicio</a>
+                        <a href="#">Nosotros</a>
+                        <a href="#">Blog</a>
+                        <a>
+                            <form action="{% url 'logout' %}" method="post">
+                                {% csrf_token %}
+                                <button type="submit">Cerrar sesión</button>
+                            </form>
+                        </a>
+                    </nav>
+                </div>
+            </header>
+			<!-- Menú desplegable -->
+			<div class="capa"></div>
+			<input type="checkbox" id="btn-menu">
+			<div class="container-menu">
+				<div class="cont-menu">
+					<nav>
+						<a href="{% url 'home' %}">Principal</a>
+						<a href="{% url 'personalcc' %}">Personal CallCenter</a>
+						<a href="{% url 'generate_report' %}">Reporte CallCenter</a>
+						<a href="{% url 'whaticket' %}">MSJ Whaticket</a>
+						<a href="{% url 'redessociales' %}">Redes Sociales</a>
+						<a href="{% url 'ventascc' %}">Ventas CallCenter</a>
+						<a href="{% url 'ventasvirtuales' %}">Ventas Virtuales</a>
+						<a href="{% url 'personal_cajero' %}">Personal Cajero</a>
+                        <a href="{% url 'reportecaja' %}">Reporte Caja</a>
+					</nav>
+					<label for="btn-menu">✖️</label>
+				</div>
+			</div>
+			<body>
+                <br>
+                <p class="p3">Ventas Virtuales</p>
+                <div class="container-parent">
+                    <div class="container-vv">
+                        <p class="v1">Zona Xaltianguis</p>
+                        <p class="v2">Asesor de Ventas y Concretador Alexis Martinez Hernández</p>
+                        <br>
+                        <table id='perfiles1' class="table table-striped table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Perfiles en Facebook</th>
+                                    <th>Zona</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>ITZEL MORA</td>
+                                    <td>Progreso, Mixquiahuala, Tlahuelilpan</td>
+                                </tr>
+                                <tr>
+                                    <td>MARLEN ACOSTA</td>
+                                    <td>Tlaxcoapan, Atitalaquia, Apaxco, Tequixquiac</td>
+                                </tr>
+                                <tr>
+                                    <td>MARIO CORDERO</td>
+                                    <td>Actopan. San José Tepenene, San Agustin Tlaxiaca</td>
+                                </tr>
+                                <tr>
+                                    <td>CARMEN TREJO</td>
+                                    <td>Tlaxcoapan</td>
+                                </tr>
+                                <tr>
+                                    <td>ALEXIS CRUZ</td>
+                                    <td>Tlaxcoapan</td>
+                                </tr>
+                                <tr> 
+                                    <td>ITZALYN LEYVA</td>
+                                    <td>Tlaxcoapan</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <div class="container-vv2">
+                        <p class="v2">Ingresa las ventas de cada sucursal</p>
+                        <table id='perfiles' class="table table-striped table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Sucursal</th>
+                                    <th>Ventas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>San Agustin Tlaxiaca</td>
+                                    <td><input type="number" name="ventas" min="0" style="width: 60px;" /></td>
+                                </tr>
+                                <tr>
+                                    <td>Actopan</td>
+                                    <td><input type="number" name="ventas" min="0" style="width: 60px;" /></td>
+                                </tr>
+                                <tr>
+                                    <td>Progreso de obregón Colonias</td>
+                                    <td><input type="number" name="ventas" min="0" style="width: 60px;" /></td>
+                                </tr>
+                                <tr>
+                                    <td>Mixquiahuala de Juarez</td>
+                                    <td><input type="number" name="ventas" min="0" style="width: 60px;" /></td>
+                                </tr>
+                                <tr>
+                                    <td>Tlahuelilpan</td>
+                                    <td><input type="number" name="ventas" min="0" style="width: 60px;" /></td>
+                                </tr>
+                                <tr> 
+                                    <td>Tlaxcoapan</td>
+                                    <td><input type="number" name="ventas" min="0" style="width: 60px;" /></td>
+                                </tr>
+                                <tr> 
+                                    <td>Atitalaquian</td>
+                                    <td><input type="number" name="ventas" min="0" style="width: 60px;" /></td>
+                                </tr>
+                                <tr> 
+                                    <td>Apaxco Telecable</td>
+                                    <td><input type="number" name="ventas" min="0" style="width: 60px;" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <br>
+                        <button id="botonagregar" class="btn btn-success">Generar Reporte</button>
+                    </div>
+                    <div class="container-vv2">
+                        <p class="v3">Reporte de Ventas</p>
+                        <table id='report-table' class="table table-striped table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Sucursal</th>
+                                    <th>Ventas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Las filas serán llenadas dinámicamente -->
+                            </tbody>
+                        </table>
+                        <br>
+                        <!-- Contenedor para la gráfica -->
+                        <canvas id="sales-chart" style="width: 100%; height: 400px;"></canvas>
+                        <button id="añadirVentasVirtualesReporteBtn" onclick="añadirVentasVirtualesAlReporte()" class="btngenerar">Añadir al reporte general</button>
+                    </div>
+                    
+                    <!-- Scripts -->
+                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            document.getElementById('botonagregar').addEventListener('click', function() {
+                                // Captura los datos de la tabla
+                                const rows = document.querySelectorAll('#perfiles tbody tr');
+                                const data = [];
+                                let totalVentas = 0;
+                                
+                                rows.forEach(row => {
+                                    const cells = row.getElementsByTagName('td');
+                                    const sucursal = cells[0].innerText;
+                                    const inputVentas = cells[1].querySelector('input');
+                                    
+                                    let ventasFloat = 0;  // Valor por defecto 0
+                                    if (inputVentas) {
+                                        const ventas = inputVentas.value;
+                                        ventasFloat = ventas !== "" ? parseFloat(ventas) : 0;  // Si está vacío, asigna 0
+                                    } else {
+                                        console.error('Input de ventas no encontrado en la fila:', row);
+                                    }
+                        
+                                    if (sucursal) {
+                                        data.push({ sucursal, ventas: ventasFloat });
+                                        totalVentas += ventasFloat;  // Sumar al total
+                                    }
+                                });
+                        
+                                // Actualiza la segunda tabla
+                                const reportTableBody = document.getElementById('report-table').getElementsByTagName('tbody')[0];
+                                reportTableBody.innerHTML = '';
+                                data.forEach(item => {
+                                    const row = document.createElement('tr');
+                                    row.innerHTML = `<td>${item.sucursal}</td><td>${item.ventas}</td>`;
+                                    reportTableBody.appendChild(row);
+                                });
+                        
+                                // Agregar fila con el total de ventas
+                                const totalRow = document.createElement('tr');
+                                totalRow.innerHTML = `<td><strong>Total</strong></td><td><strong>${totalVentas}</strong></td>`;
+                                reportTableBody.appendChild(totalRow);
+                        
+                                // Genera la gráfica
+                                const ctx = document.getElementById('sales-chart').getContext('2d');
+                                if (window.myChart) {
+                                    window.myChart.destroy();
+                                }
+                                window.myChart = new Chart(ctx, {
+                                    type: 'bar',
+                                    data: {
+                                        labels: data.map(item => item.sucursal),
+                                        datasets: [{
+                                            label: 'Ventas',
+                                            data: data.map(item => item.ventas),
+                                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                            borderColor: 'rgba(75, 192, 192, 1)',
+                                            borderWidth: 1
+                                        }]
+                                    },
+                                    options: {
+                                        scales: {
+                                            y: {
+                                                beginAtZero: true
+                                            }
+                                        }
+                                    }
+                                });
+                            });
+                        });
+                        function obtenerDatosDeVentasVirtuales() {
+                            const secciones = [];
+                            const graficos = {};
+                        
+                            // Procesar la tabla de ventas virtuales
+                            const tablaVentasVirtuales = document.querySelector("#report-table");
+                            if (tablaVentasVirtuales) {
+                                const datos = [];
+                                tablaVentasVirtuales.querySelectorAll("tbody tr").forEach((fila) => {
+                                    const sucursal = fila.querySelector("td:nth-child(1)").textContent.trim();
+                                    const ventas = fila.querySelector("td:nth-child(2)").textContent.trim();
+                                    datos.push([sucursal, ventas]);
+                                });
+                        
+                                secciones.push({
+                                    titulo: "REPORTE DE VENTAS VIRTUALES",
+                                    datos,
+                                });
+                            }
+                        
+                            // Procesar el gráfico de ventas virtuales
+                            const canvas = document.getElementById("sales-chart");
+                            if (canvas) {
+                                graficos["Gráfico de Ventas Virtuales"] = canvas.toDataURL("image/png");
+                            }
+                        
+                            return { secciones, graficos };
+                        }
+                        
+                        function añadirVentasVirtualesAlReporte() {
+                            const ventasVirtualesData = obtenerDatosDeVentasVirtuales();
+                            const existingData = JSON.parse(localStorage.getItem("reporteVentasVirtuales")) || {};
+                        
+                            const updatedData = {
+                                ...existingData,
+                                secciones: ventasVirtualesData.secciones,
+                                graficos: ventasVirtualesData.graficos,
+                            };
+                        
+                            localStorage.setItem("reporteVentasVirtuales", JSON.stringify(updatedData));
+                            alert("Datos de Ventas Virtuales añadidos al reporte.");
+                        }                        
+                    </script>
+
+        {% endif %}
+         {% endblock %}
+            </body>
+</html>

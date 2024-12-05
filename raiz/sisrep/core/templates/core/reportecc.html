@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<head>
+	<meta charset="UTF-8">
+	<title>ReporteCC</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+</head>
+{% extends "core/base.html" %}
+{% load static %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+{% load custom_filters %}
+{% block content %}
+    {% if request.user.is_authenticated %}
+        <header class="header">
+            <div class="container">
+                <div class="btn-menu">
+                    <label for="btn-menu">☰</label>
+                </div>
+                <div class="logo">
+                    <h4>Bienvenido {{ user.username | upper }}</h4>
+                </div>
+                <div class="image-menu">
+                    <img src = "{% static "Images/LogoBlancoTC.png" %}" alt="Telecable">
+                </div>
+                <nav class="menu">
+                    <a href="#">Inicio</a>
+                    <a href="#">Nosotros</a>
+                    <a href="#">Blog</a>
+                    <a>
+                        <form action="{% url 'logout' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit">Cerrar sesión</button>
+                        </form>
+                    </a>
+                </nav>
+            </div>
+        </header>
+        <div class="capa"></div>
+        <input type="checkbox" id="btn-menu">
+        <div class="container-menu">
+			<div class="cont-menu">
+				<nav>
+					<a href="{% url 'home' %}">Principal</a>
+					<a href="{% url 'personalcc' %}">Personal CallCenter</a>
+					<a href="{% url 'generate_report' %}">Reporte CallCenter</a>
+					<a href="{% url 'whaticket' %}">MSJ Whaticket</a>
+					<a href="{% url 'redessociales' %}">Redes Sociales</a>
+					<a href="{% url 'ventascc' %}">Ventas CallCenter</a>
+					<a href="{% url 'ventasvirtuales' %}">Ventas Virtuales</a>
+					<a href="{% url 'personal_cajero' %}">Personal Cajero</a>
+                    <a href="{% url 'reportecaja' %}">Reporte Caja</a>
+				</nav>
+				<label for="btn-menu">✖️</label>
+			</div>
+		</div>
+        <p class= "p3" >Reporte de Tipificaciones CallCenter</p>
+        <!-- REPORTE GENERAL -->
+        <div class = "container-llamadas" >
+            <h2>Bienvenido</h2>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ zone_form.zone.label_tag }} {{ zone_form.zone }}
+            
+                <br><br>
+            
+                {{ branch_form.branch.label_tag }} 
+                <select id="id_branch" name="branch">
+                    <option value="">Seleccione una sucursal</option>
+                </select>
+            
+                <br>
+            
+                {{ branch_form.file.label_tag }} {{ branch_form.file }}
+                <br>
+                <button type="submit" class="btngenerar">Generar Reporte</button>
+            </form>
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script>
+                $(document).ready(function() {
+                    // Función para cargar sucursales con AJAX según la zona seleccionada
+                    function loadBranches(zone) {
+                        $.ajax({
+                            url: "{% url 'get_branches' %}",
+                            data: { 'zone': zone },
+                            success: function(data) {
+                                var branches = data.branches;
+                                var branchSelect = $('#id_branch');
+                                branchSelect.empty();  // Limpiar las opciones actuales
+            
+                                // Agregar la opción predeterminada
+                                branchSelect.append($('<option>', {
+                                    value: '',
+                                    text: 'Seleccione una sucursal'
+                                }));
+                                $.each(branches, function(index, branch) {
+                                    branchSelect.append($('<option>', {
+                                        value: branch[0],
+                                        text: branch[1]
+                                    }));
+                                });
+                            }
+                        });
+                    }
+            
+                    // Detectar cambio en la zona seleccionada
+                    $('#id_zone').change(function() {
+                        var selectedZone = $(this).val();  // Obtener la zona seleccionada
+                        loadBranches(selectedZone);  // Cargar las sucursales correspondientes
+                    });
+            
+                    // Cargar sucursales si ya hay una zona seleccionada al cargar la página
+                    var initialZone = $('#id_zone').val();
+                    if (initialZone) {
+                        loadBranches(initialZone);
+                    }
+                });
+            </script>
+            <br>
+            {% if reports %}
+                <h3 class="text-center">TOTAL DE LLAMADAS INGRESADAS A CC EN CADA SUCURSAL</h3>
+                {% for zone_report in reports %}
+                    <table id="customers" class="table table-striped table-custom exportable-table diurno" data-title='Total de Llamadas ingresadas a CC en cada sucursal' data-graph="{{ imagenes_graficas|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="3">{{ zone_report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>SUCURSAL</th>
+                                <th>TOTAL DE LLAMADAS</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for branch in zone_report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    <td>{{ branch.total_calls }}</td>
+                                    <td>
+                                        <form action="{% url 'delete_report' zone_report.zone %}" method="post">
+                                            {% csrf_token %}
+                                            <button class="btn-danger">Eliminar</button>
+                                        </form>
+                                    </td>      
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endfor %}
+                <!-- Gráfico de llamadas por zona (una gráfica por zona) -->
+                <h2>Gráficas total de llamadas por zona</h2>
+                {% if imagenes_graficas %}
+                    <div class="grafica-container">
+                        <!-- Recorrer las gráficas generadas y mostrar cada una -->
+                        {% for imagen in imagenes_graficas %}
+                            <div class="grafica-item" >
+                                <img src="data:image/png;base64,{{ imagen }}" alt="Gráfica de llamadas diurnas">
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class= "p3">No hay reportes disponibles.</p>
+            {% endif %}
+
+            {% if reports %} 
+                <h3 class="text-center">PRODUCTIVIDAD OPERADORES</h3>
+                {% for report in reports %}
+                    <table id = 'customers' class="table table-striped table-custom exportable-table diurno" data-title='Productividad Operadores'  data-graph="{{ imagenes_graficas_agentes|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="{{ report.branches.0.agents|length|add:1 }}">{{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>Sucursal</th>
+                                {% for agent in report.branches.0.agents %}
+                                    <th>{{ agent.NOMBRE_AGENTE }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    {% for agent in branch.agents %}
+                                        <td>{{ agent.total_calls }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                {% endfor %}
+                <br>
+                <h2>Gráficas por Agente</h2>
+                <div class="grafica_agente-container">
+                    {% for grafica in imagenes_graficas_agentes %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica }}" alt="Gráfica por agente">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% if reports %}
+                <h3 class="text-center">CATEGORIA DE LLAMADAS</h3>
+                {% for report in reports %}
+                    <table id="customers" class="table table-striped table-custom exportable-table diurno" data-title='Categoria de Llamadas' data-graph="{{ imagenes_graficas_categoria|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="8">ZONA: {{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                
+                                <th>SUCURSAL</th>
+                                {% for category in total_category_calls %}
+                                    <th>{{ category }}
+                                {% endfor %}
+                                <th>TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+
+                                    {% for category in branch.categories %}
+                                        <td>{{ category.total_categories }}</td>
+                                    {% endfor %}
+
+                                    <td>{{ branch.total_calls }}</td> <!-- Total de llamadas de la sucursal -->
+                                </tr>
+                            {% endfor %}
+
+                            {% for zone, totals in total_by_zone.items %}
+                            <tr>
+                                <td><strong>{{ zone }}</strong></td>
+                                {% for category, total in totals.items %}
+                                    {% if category != 'total' %}
+                                        <td><strong>{{ total }}</strong></td>
+                                    {% endif %}
+                                {% endfor %}
+                                <td><strong>{{ totals.total }}</strong></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                {% endfor %}
+
+                <h2>Gráfica de categorias</h2>
+                <div class="grafica_agente-container">
+                    {% for imagen in imagenes_graficas_categoria %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ imagen }}" alt="Gráfica de Llamadas por Categoría">
+                        </div>
+                    {% endfor %}
+                </div>
+
+            {% endif %}
+
+            {% if reports %}
+                <br>
+                <h3 class="text-center">MOTIVO TIPIFICACIONES</h3>
+                <h3 class="mt-4">Aclaraciones / Consulta</h3>
+                <br>
+                {% for report in reports %}
+                        <!-- Tabla de motivos de Aclaraciones/Consulta -->
+                    <table id="customers" class="table table-striped table-custom exportable-table diurno" data-title='Aclaraciones / Consulta' data-graph="{{ imagenes_graficas_motivos|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="10">ZONA: {{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>Sucursal</th>
+                                {% if report.branches %}
+                                    {% for motivo, total in report.branches.0.motivo_calls.items %}
+                                        <th>{{ motivo }}</th>
+                                    {% endfor %}
+                                {% endif %}
+                                <th>Total de llamadas</th>
+                            </tr>
+                        </thead>
+                        <tbody> 
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    {% for motivo, total in branch.motivo_calls.items %}
+                                        <td>{{ total }}</td>
+                                    {% endfor %}
+                                    <td>{{ branch.total_calls_aclaraciones }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endfor %}
+                    <h2>Gráfica Aclaraciones / Consulta</h2>
+                    <div class="grafica_agente-container">
+                        {% for grafica_motivos in imagenes_graficas_motivos %}
+                            <div class="grafica-agente-item">
+                                <img src="data:image/png;base64,{{ grafica_motivos }}" alt="Gráfica de Motivos" >
+                            </div>
+                        {% endfor %}
+                    </div>
+            {% endif %}
+
+            {% if reports %}
+                <h3>Quejas de servicio TV</h3>
+                {% for report in reports %}
+                    <br>
+                    <table id="customers" class="table table-striped table-custom exportable-table diurno" data-title='Quejas de Servicio TV' data-graph="{{ imagenes_graficas_motivos_tv|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="10">{{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>Sucursal</th>
+                                {% if report.branches %}
+                                    <!-- Aseguramos que motivo_calls_tv exista en el primer elemento de branches -->
+                                    {% if report.branches.0.motivo_calls_tv %}
+                                        {% for motivo, total in report.branches.0.motivo_calls_tv.items %}
+                                            <th>{{ motivo }}</th>
+                                        {% endfor %}
+                                    {% else %}
+                                        <th>No hay motivos disponibles</th>
+                                    {% endif %}
+                                {% endif %}
+                                <th>Total de llamadas</th>
+                            </tr>
+                        </thead>
+                        <tbody> 
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    {% for motivo, total in branch.motivo_calls_tv.items %}
+                                        <td>{{ total }}</td>
+                                    {% endfor %}
+                                    <td>{{ branch.total_calls_quejas_tv }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>  
+                {% endfor %}
+                <h2>Gráfica Quejas de servicio TV</h2>
+                <div class="grafica_agente-container">
+                    {% for grafica_motivos_tv in imagenes_graficas_motivos_tv %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica_motivos_tv }}" alt="Gráfica de Motivos de Quejas de TV" style="width:100%; max-width:600px;">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if reports %}
+                <h3>Quejas de servicio de Internet</h3>
+                {% for report in reports %}
+                    <table id="customers" class="table table-striped table-custom exportable-table diurno" data-title='Quejas de Servicio Internet' data-graph="{{ imagenes_graficas_motivos_internet|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="10">{{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>Sucursal</th>
+                                {% if report.branches.0.motivo_calls_internet %}
+                                    {% for motivo in report.branches.0.motivo_calls_internet.keys %}
+                                        <th>{{ motivo }}</th>
+                                    {% endfor %}
+                                {% else %}
+                                    <th>No hay motivos disponibles</th>
+                                {% endif %}
+                                <th>Total de llamadas</th>
+                            </tr>
+                        </thead>
+                        <tbody> 
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    {% for total in branch.motivo_calls_internet.values %}
+                                        <td>{{ total }}</td>
+                                    {% endfor %}
+                                    <td>{{ branch.total_calls_quejas_internet }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                    
+                {% endfor %}
+                <h2>Gráfica Quejas de Servicio Internet</h2>
+                <div class="grafica_agente-container">
+                    {% for grafica_motivos_internet in imagenes_graficas_motivos_internet %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica_motivos_internet }}" alt="Gráfica de Motivos de Quejas de Internet" >
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if reports %}
+                <h3>Redes Sociales</h3>
+                {% for report in reports %}
+                    <table id="customers" class="table table-striped table-custom exportable-table diurno" data-title='Redes Sociales' data-graph="{{ imagenes_graficas_motivos_redes|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="10">{{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>Sucursal</th>
+                                {% if report.branches %}
+                                    {% if report.branches.0.motivo_calls_redes %}
+                                        {% for motivo, total in report.branches.0.motivo_calls_redes.items %}
+                                            <th>{{ motivo }}</th>
+                                        {% endfor %}
+                                    {% else %}
+                                        <th>No hay motivos disponibles</th>
+                                    {% endif %}
+                                {% endif %}
+                                <th>Total de llamadas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    {% for motivo, total in branch.motivo_calls_redes.items %}
+                                        <td>{{ total }}</td>
+                                    {% endfor %}
+                                    <td>{{ branch.total_calls_redes }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                {% endfor %}
+                <h2>Gráfica Redes Sociales </h2>
+                <div class="grafica_agente-container">
+                    {% for grafica_motivos_redes in imagenes_graficas_motivos_redes %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica_motivos_redes }}" alt="Gráfica de Motivos de Redes Sociales">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        <!-- ****************************REPORTE CALL-CENTER NOCTURNO INICIA************************************************-->
+        <div class="container-llamadas">
+            <h2>Call Center Nocturno</h2>
+            {% if reports %}
+                <h3 class="text-center">TOTAL DE LLAMADAS INGRESADAS A CC EN CADA SUCURSAL</h3>
+                {% for zone_report in reports %}
+                        <table id="customers" class="table table-striped table-custom exportable-table nocturno" data-title='Total de Llamadas Ingresadas a CC' data-graph="{{ imagenes_graficas_llamadas_nocturno|index:forloop.counter0 }}">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">{{ zone_report.zone }}</th>
+                                </tr>
+                                <tr>
+                                    <th>Sucursal</th>
+                                    <th>Total Llamadas Nocturnas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for branch in zone_report.branches %}
+                                        <tr>
+                                            <td>{{ branch.branch }}</td>
+                                            <td>{{ branch.total_calls_nocturno }}</td>
+                                        </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                {% endfor %}
+                <h2>Gráfica Total llamadas por zona</h2>
+                <div class="grafica_agente-container">
+                    {% for grafica_nocturno in imagenes_graficas_llamadas_nocturno %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica_nocturno }}" alt="Gráfica de Llamadas Nocturnas">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No hay reportes disponibles.</p>
+            {% endif %}
+            <br>
+            {% if reports %}   
+                <h3 class="text-center">CATEGORIA DE LLAMADAS</h3>
+                {% for report in reports %}
+                    <br>
+                    <table id="customers" class="table table-striped table-custom exportable-table nocturno" data-title='Categoria de Llamadas' data-graph="{{ imagenes_graficas_categorias_nocturno|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="8">{{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                
+                                <th>SUCURSAL</th>
+                                {% for category in total_category_calls %}
+                                    <th>{{ category }}
+                                {% endfor %}
+                                <th>TOTAL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+
+                                    {% for category in branch.categories_nocturno %}
+                                        <td>{{ category.total_categories }}</td>
+                                    {% endfor %}
+
+                                    <td>{{ branch.total_calls_nocturno }}</td> 
+                                </tr>
+                            {% endfor %}
+                            <tr>
+                                <td><strong>Total</strong></td>
+                                {% for category, total in total_category_calls_nocturno.items %}
+                                    <td><strong>{{ total }}</strong></td>
+                                {% endfor %}
+                                <td><strong>{{ total_calls_all_zones_nocturno }}</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br>
+                {% endfor %}
+                <h2>Gráfica Categoria de llamadas</h2>
+                <div class="grafica_agente-container">
+                    {% for grafica_categorias_nocturno in imagenes_graficas_categorias_nocturno %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica_categorias_nocturno }}" alt="Gráfica de Categorías Nocturno" >
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% if reports %}
+                <h3 class="text-center">MOTIVO TIPIFICACIONES</h3>
+                <h3 class="mt-4">Aclaraciones / Consulta</h3>
+                {% for report in reports %}
+                    <table id="customers" class="table table-striped table-custom exportable-table nocturno" data-title='Aclaraciones/Consulta' data-graph="{{ imagenes_graficas_aclaraciones_nocturno|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="10">{{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>Sucursal</th>
+                                {% if report.branches %}
+                                    {% for motivo, total in report.branches.0.motivo_calls_nocturno.items %}
+                                        <th>{{ motivo }}</th>
+                                    {% endfor %}
+                                {% endif %}
+                                <th>Total de llamadas</th>
+                            </tr>
+                        </thead>
+                        <tbody> 
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    {% for motivo, total in branch.motivo_calls_nocturno.items %}
+                                        <td>{{ total }}</td>
+                                    {% endfor %}
+                                    <td>{{ branch.total_calls_aclaraciones_nocturno }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                {% endfor %}
+                <h2>Gráfica Aclaraciones / Consulta</h2>
+                <div class="grafica_agente-container">
+                    {% for grafica_aclaraciones_nocturno in imagenes_graficas_aclaraciones_nocturno %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica_aclaraciones_nocturno }}" alt="Gráfica de Motivos Aclaraciones Nocturno">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            
+            {% if reports %}
+                <h3>Quejas de servicio TV</h3>
+                {% for report in reports %}
+                    <table id="customers" class="table table-striped table-custom exportable-table nocturno" data-title='Quejas de Servicio TV' data-graph="{{ imagenes_graficas_quejas_tv_nocturno|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="10">{{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>Sucursal</th>
+                                {% if report.branches %}
+                                    {% if report.branches.0.motivo_calls_tv_nocturno %}
+                                        {% for motivo, total in report.branches.0.motivo_calls_tv_nocturno.items %}
+                                            <th>{{ motivo }}</th>
+                                        {% endfor %}
+                                    {% else %}
+                                        <th>No hay motivos disponibles</th>
+                                    {% endif %}
+                                {% endif %}
+                                <th>Total de llamadas</th>
+                            </tr>
+                        </thead>
+                        <tbody> 
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    {% for motivo, total in branch.motivo_calls_tv_nocturno.items %}
+                                        <td>{{ total }}</td>
+                                    {% endfor %}
+                                    <td>{{ branch.total_calls_quejas_tv_nocturno }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                {% endfor %}
+                <h2>Gráfica Quejas de Servicio TV</h2>
+                <div class="grafica_agente-container">
+                    {% for grafica_quejas_tv_nocturno in imagenes_graficas_quejas_tv_nocturno %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica_quejas_tv_nocturno }}" alt="Gráfica de Quejas TV Nocturno">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if reports %}
+                <h3>Quejas de servicio de Internet</h3>
+                {% for report in reports %}
+                    <table id="customers" class="table table-striped table-custom exportable-table nocturno" data-title='Quejas de Servicio Internet' data-graph="{{ imagenes_graficas_quejas_internet_nocturno|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="10">{{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>Sucursal</th>
+                                {% if report.branches.0.motivo_calls_internet_nocturno %}
+                                    {% for motivo in report.branches.0.motivo_calls_internet_nocturno.keys %}
+                                        <th>{{ motivo }}</th>
+                                    {% endfor %}
+                                {% else %}
+                                    <th>No hay motivos disponibles</th>
+                                {% endif %}
+                                <th>Total de llamadas</th>
+                            </tr>
+                        </thead>
+                        <tbody> 
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    {% for total in branch.motivo_calls_internet_nocturno.values %}
+                                        <td>{{ total }}</td>
+                                    {% endfor %}
+                                    <td>{{ branch.total_calls_quejas_internet_nocturno }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                {% endfor %}
+                <h2>Gráfica Quejas de Servicio Internet</h2>
+                <div class="grafica_agente-container">
+                    {% for grafica_quejas_internet_nocturno in imagenes_graficas_quejas_internet_nocturno %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica_quejas_internet_nocturno }}" alt="Gráfica de Quejas Internet Nocturno">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if reports %}
+                <h3>Redes Sociales</h3>
+                {% for report in reports %}
+                    <table id="customers" class="table table-striped table-custom exportable-table nocturno" data-title='Redes Sociales' data-graph="{{ imagenes_graficas_redes_nocturno|index:forloop.counter0 }}">
+                        <thead>
+                            <tr>
+                                <th colspan="10">{{ report.zone }}</th>
+                            </tr>
+                            <tr>
+                                <th>Sucursal</th>
+                                {% if report.branches %}
+                                    {% if report.branches.0.motivo_calls_redes_nocturno %}
+                                        {% for motivo, total in report.branches.0.motivo_calls_redes_nocturno.items %}
+                                            <th>{{ motivo }}</th>
+                                        {% endfor %}
+                                    {% else %}
+                                        <th>No hay motivos disponibles</th>
+                                    {% endif %}
+                                {% endif %}
+                                <th>Total de llamadas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for branch in report.branches %}
+                                <tr>
+                                    <td>{{ branch.branch }}</td>
+                                    {% for motivo, total in branch.motivo_calls_redes_nocturno.items %}
+                                        <td>{{ total }}</td>
+                                    {% endfor %}
+                                    <td>{{ branch.total_calls_redes_nocturno }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <br>
+                {% endfor %}
+                <h2>Gráfica Redes Sociales</h2>
+                <div class="grafica_agente-container">
+                    {% for grafica_redes_nocturno in imagenes_graficas_redes_nocturno %}
+                        <div class="grafica-agente-item">
+                            <img src="data:image/png;base64,{{ grafica_redes_nocturno }}" alt="Gráfica de Redes Sociales Nocturno" >
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Botón para exportar a Excel -->
+            <button id="exportButton" class="btngenerar">Exportar a Excel</button>
+        </div> 
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <script>
+            document.getElementById('exportButton').addEventListener('click', async function () {
+                const workbook = new ExcelJS.Workbook();
+        // agregue permisos
+                // Crear la hoja principal
+                const worksheetCC = workbook.addWorksheet('Reporte Call-Center');
+                let currentRowCC = 1;
+        
+                // Función: Agregar separadores
+                function addSeparator(worksheet, title, currentRow) {
+                    const columnsCount = document.querySelector('.exportable-table').querySelector('tr').cells.length;
+        
+                    worksheet.mergeCells(`A${currentRow}:${String.fromCharCode(64 + columnsCount)}${currentRow}`);
+                    const mergedCell = worksheet.getCell(`A${currentRow}`);
+                    mergedCell.value = title;
+                    mergedCell.font = { name: 'Georgia', size: 16, bold: true, color: { argb: 'FFFFFF' } };
+                    mergedCell.alignment = { vertical: 'middle', horizontal: 'center' };
+                    mergedCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '000000' } };
+        
+                    return currentRow + 2; // Espacio
+                }
+        
+                // Función para agregar una gráfica a una hoja de Excel
+                function addGraph(worksheet, base64Image, startRow) {
+                    const imageId = workbook.addImage({
+                        base64: base64Image,
+                        extension: 'png',
+                    });
+        
+                    worksheet.addImage(imageId, {
+                        tl: { col: 0, row: startRow },
+                        ext: { width: 500, height: 300 },
+                    });
+        
+                    return startRow + 15; // Espacio
+                }
+        
+                // Función: Exportar tablas a una hoja con diseño
+                function exportTables(worksheet, tables, sectionTitle, currentRow) {
+                    if (!tables || typeof tables.forEach !== 'function') {
+                        console.warn('No se encontraron tablas para exportar en:', sectionTitle);
+                        return currentRow;
+                    }
+
+                    // Agregar separador para la sección
+                    currentRow = addSeparator(worksheet, sectionTitle, currentRow);
+
+                    tables.forEach((table, index) => {
+                        const tableTitle = table.getAttribute('data-title') || `Tabla ${sectionTitle} ${index + 1}`;
+                        const graphBase64 = table.getAttribute('data-graph'); // Extraer gráfica asociada
+                        const rows = table.querySelectorAll('tr');
+                    
+                        // Agregar título de la tabla
+                        worksheet.mergeCells(`A${currentRow}:${String.fromCharCode(64 + rows[0].cells.length)}${currentRow}`);
+                        const titleCell = worksheet.getCell(`A${currentRow}`);
+                        titleCell.value = tableTitle;
+                        titleCell.font = { name: 'Cambria', size: 14, bold: true, color: { argb: '000000' } };
+                        titleCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText:true};
+                        titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF36D' } };
+                    
+                        // Agregar encabezados con diseño
+                        const headers = Array.from(rows[0].cells).map(cell => cell.innerText);
+                        const headerRow = worksheet.addRow(headers);
+                        headerRow.font = { name: 'Garamond',size: 12, bold: true, color: { argb: '000000' } };
+                        headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+                    
+                        // Aplicar el fondo verde solo a las celdas del encabezado
+                        headerRow.eachCell((cell, colNumber) => {
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'A5E5A1' } }; // Verde
+                            cell.border = {
+                                top: { style: 'thin', color: { argb: '000000' } },
+                                left: { style: 'thin', color: { argb: '000000' } },
+                                bottom: { style: 'thin', color: { argb: '000000' } },
+                                right: { style: 'thin', color: { argb: '000000' } },
+                            };
+                        });
+                    
+                        currentRow++;
+                    
+                        // Agregar las filas de datos con alternancia de colores y ajuste de texto
+                        rows.forEach((row, rowIndex) => {
+                            if (rowIndex === 0) return; // Omitir encabezado ya procesado
+                            const rowData = Array.from(row.cells).map(cell => cell.innerText);
+                            const dataRow = worksheet.addRow(rowData);
+                            dataRow.font = { name: 'Garamond', size: 12, color: { argb: '000000' } };
+                            dataRow.eachCell((cell, colIndex) => {
+                                // Colores alternos para las filas
+                                cell.fill = {
+                                    type: 'pattern',
+                                    pattern: 'solid',
+                                    fgColor: { argb: rowIndex % 2 === 0 ? 'F5F5F5' : 'FFFFFF' },
+                                };
+                    
+                                // Bordes en las celdas
+                                cell.border = {
+                                    top: { style: 'thin', color: { argb: '000000' } },
+                                    left: { style: 'thin', color: { argb: '000000' } },
+                                    bottom: { style: 'thin', color: { argb: '000000' } },
+                                    right: { style: 'thin', color: { argb: '000000' } },
+                                };
+                    
+                                // Alineación de texto
+                                cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+                    
+                                // Ajustar la altura de las filas según el contenido de las celdas
+                                const maxLength = Math.max(...rowData.map(val => val.length)); // Encontrar la longitud más larga
+                                if (maxLength > 15) { // Ajustar el límite según sea necesario
+                                    worksheet.getRow(dataRow.number).height = 40; // Ajustar la altura según el tamaño del texto
+                                }
+                            });
+                        });
+                    
+                        // Espacio entre tabla y gráfica
+                        currentRow += 4;
+
+                        // Agregar gráfica asociada debajo de la tabla
+                        if (graphBase64) {
+                            currentRow = addGraph(worksheet, graphBase64, currentRow);
+                        }
+
+                        // Espacio entre secciones
+                        currentRow += 4;
+                    });
+
+                    return currentRow;
+                }
+
+        
+                // Exportar datos de las tablas del Call-Center
+                const diurnoTables = document.querySelectorAll('.exportable-table.diurno');
+                currentRowCC = exportTables(worksheetCC, diurnoTables, 'CALL-CENTER DIURNO', currentRowCC);
+        
+                const nocturnoTables = document.querySelectorAll('.exportable-table.nocturno');
+                currentRowCC = exportTables(worksheetCC, nocturnoTables, 'CALL-CENTER NOCTURNO', currentRowCC);
+        
+                // Ajustar automáticamente el ancho de las columnas
+                worksheetCC.columns.forEach((column) => {
+                    let maxLength = 8;
+                    column.eachCell({ includeEmpty: true }, (cell) => {
+                        const cellValue = cell.value ? cell.value.toString() : '';
+                        maxLength = Math.max(maxLength, cellValue.length);
+                    });
+                    column.width = maxLength + 2;
+                });
+        
+                async function agregarWhaticketAlExcel(workbook) {
+                    const whaticketData = localStorage.getItem('whaticketData');
+                    if (!whaticketData) {
+                        console.warn('No hay datos de Whaticket disponibles para agregar.');
+                        return;
+                    }
+                
+                    const { resumenSecciones, graficosResumen } = JSON.parse(whaticketData);
+                    const worksheetWhaticket = workbook.addWorksheet('MSJ Whaticket');
+                    let currentRow = 1;
+                
+                    resumenSecciones.forEach(({ titulo, datos, contenedor }) => {
+                        // Obtener el número de columnas que se usarán
+                        const columnasUsadas = contenedor === 'resultadosContenedor' ? 4 : 3;
+                    
+                        // Agregar título de la sección
+                        const tituloCell = worksheetWhaticket.getCell(`A${currentRow}`);
+                        tituloCell.value = titulo;
+                        tituloCell.font = { name: 'Cambria', size: 14, bold: true, color: { argb: '000000' } };
+                        tituloCell.alignment = { vertical: 'middle', horizontal: 'center' };
+                        tituloCell.fill = {
+                            type: 'pattern',
+                            pattern: 'solid',
+                            fgColor: { argb: 'FFF36D' },
+                        };
+                        worksheetWhaticket.mergeCells(`A${currentRow}:${String.fromCharCode(64 + columnasUsadas)}${currentRow}`); // Combina celdas para el título
+                        currentRow++;
+                    
+                        // Agregar encabezados
+                        const encabezados = contenedor === 'resultadosContenedor'
+                            ? ['Personal', 'Chats Creados', 'Chats Resueltos', 'Total Mensajes']
+                            : ['Personal', 'Chats Creados', 'Chats Resueltos'];
+                    
+                        const headerRow = worksheetWhaticket.addRow(encabezados);
+                        headerRow.font = { name: 'Garamond',size: 12, bold: true, color: { argb: '000000' } };
+                        headerRow.alignment = { vertical: 'middle', horizontal: 'center' };
+                        headerRow.eachCell((cell, colNumber) => {
+                            // Estilo de los encabezados
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'A5E5A1' } }; // Verde
+                            cell.border = {
+                                top: { style: "thin", color: { argb: "000000" } },
+                                left: { style: "thin", color: { argb: "000000" } },
+                                bottom: { style: "thin", color: { argb: "000000" } },
+                                right: { style: "thin", color: { argb: "000000" } },
+                            };
+                        });
+                    
+                        // Aplicar estilos solo a las celdas con contenido
+                        headerRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+                            if (colNumber <= columnasUsadas) {
+                                cell.border = {
+                                    top: { style: 'thin', color: { argb: '000000' } },
+                                    left: { style: 'thin', color: { argb: '000000' } },
+                                    bottom: { style: 'thin', color: { argb: '000000' } },
+                                    right: { style: 'thin', color: { argb: '000000' } },
+                                };
+                            }
+                        });
+                        currentRow++;
+                    
+                        // Agregar datos
+                        datos.forEach((fila) => {
+                            const dataRow = worksheetWhaticket.addRow(fila);
+                            dataRow.font = { name: 'Garamond', size: 12, color: { argb: '000000' } };
+                            dataRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+                                if (colNumber <= columnasUsadas) {
+                                    const isEvenRow = currentRow % 2 === 0;
+                                    cell.fill = {
+                                        type: 'pattern',
+                                        pattern: 'solid',
+                                        fgColor: { argb: isEvenRow ? 'F5F5F5' : 'FFFFFF' },
+                                    };
+                                    cell.alignment = { vertical: 'middle', horizontal: colNumber === 1 ? 'left' : 'center' };
+                                    cell.border = {
+                                        top: { style: 'thin', color: { argb: '000000' } },
+                                        left: { style: 'thin', color: { argb: '000000' } },
+                                        bottom: { style: 'thin', color: { argb: '000000' } },
+                                        right: { style: 'thin', color: { argb: '000000' } },
+                                    };
+                                }
+                            });
+                            currentRow++;
+                        });
+                    
+                        // Ajustar ancho de columnas automáticamente
+                        worksheetWhaticket.columns.forEach((column, index) => {
+                            if (index < columnasUsadas) {
+                                let maxLength = 8; // Mínimo ancho
+                                column.eachCell({ includeEmpty: true }, (cell) => {
+                                    const value = cell.value ? cell.value.toString() : '';
+                                    maxLength = Math.max(maxLength, value.length);
+                                });
+                                column.width = maxLength + 2; // Espacio adicional
+                            }
+                        });
+                
+                        // Agregar gráfico correspondiente
+                        const graficoClave = `${titulo} - ${contenedor}`;
+                        if (graficosResumen[graficoClave]) {
+                            const imageId = workbook.addImage({
+                                base64: graficosResumen[graficoClave],
+                                extension: 'png',
+                            });
+                            worksheetWhaticket.addImage(imageId, {
+                                tl: { col: 0, row: currentRow },
+                                ext: { width: 500, height: 300 },
+                            });
+                            currentRow += 20;
+                        } else {
+                            console.warn(`No se encontró gráfico para ${graficoClave}`);
+                        }
+                
+                        currentRow += 2; // Espacio entre secciones
+                    });
+                }
+                
+                
+                                
+                 
+                async function agregarRedesSocialesAlExcel(workbook) {
+                    const redesData = localStorage.getItem("reporteRedesSociales");
+                    if (!redesData) {
+                        console.warn("No hay datos de Redes Sociales disponibles para agregar.");
+                        return;
+                    }
+                
+                    const { secciones, graficos } = JSON.parse(redesData);
+                    const worksheetRedes = workbook.addWorksheet("Redes Sociales");
+                    let currentRow = 1;
+                
+                    // Procesar cada sección (Tablas)
+                    secciones.forEach(({ titulo, datos }) => {
+                        // Agregar título de la sección
+                        const titleCell = worksheetRedes.getCell(`A${currentRow}`);
+                        titleCell.value = titulo;
+                        titleCell.font = { name: 'Cambria', size: 14, bold: true, color: { argb: '000000' } };
+                        titleCell.alignment = { vertical: "middle", horizontal: "center", wrapText:true};
+                        titleCell.fill = {
+                            type: "pattern",
+                            pattern: "solid",
+                            fgColor: { argb: 'FFF36D' }, // Verde claro
+                        };
+                
+                        // Combinar celdas para el título
+                        worksheetRedes.mergeCells(`A${currentRow}:L${currentRow}`);
+                        currentRow++;
+                
+                        // Agregar encabezados
+                        const encabezados = [
+                            "Sucursal",
+                            "Total de mensajes",
+                            "Reporte de falla de servicio Internet",
+                            "Reporte de falla de servicio TV",
+                            "Falla General",
+                            "Info. para contrato nuevo",
+                            "Cambio de paquete",
+                            "Horarios de oficina",
+                            "Ubicación de sucursal",
+                            "Informe método de pago",
+                            "Promociones",
+                            "Sucursales de otras zonas",
+                            "Otros",
+                        ];
+                
+                        const headerRow = worksheetRedes.addRow(encabezados);
+                        headerRow.font = { name: 'Garamond', size: 12, color: { argb: '000000' } };
+                        headerRow.alignment = { vertical: "middle", horizontal: "center", wrapText: true};
+                        headerRow.eachCell((cell, colNumber) => {
+                            // Estilo de los encabezados
+                            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'A5E5A1' } }; // Verde
+                            cell.border = {
+                                top: { style: "thin", color: { argb: "000000" } },
+                                left: { style: "thin", color: { argb: "000000" } },
+                                bottom: { style: "thin", color: { argb: "000000" } },
+                                right: { style: "thin", color: { argb: "000000" } },
+                            };
+                        });
+                
+                        currentRow++;
+                
+                        // Agregar filas de datos
+                        datos.forEach((fila) => {
+                            const dataRow = worksheetRedes.addRow(fila);
+                            dataRow.font = { name: 'Garamond', size: 12, color: { argb: '000000' } };
+                            dataRow.eachCell((cell, colNumber) => {
+                                const isEvenRow = currentRow % 2 === 0;
+                                cell.fill = {
+                                    type: "pattern",
+                                    pattern: "solid",
+                                    fgColor: { argb: isEvenRow ? "F5F5F5" : "FFFFFF" }, // Alternar colores
+                                };
+                                cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "left" : "center" };
+                                cell.border = {
+                                    top: { style: "thin", color: { argb: "000000" } },
+                                    left: { style: "thin", color: { argb: "000000" } },
+                                    bottom: { style: "thin", color: { argb: "000000" } },
+                                    right: { style: "thin", color: { argb: "000000" } },
+                                };
+                            });
+                            currentRow++;
+                        });
+                
+                        currentRow += 2; // Espacio entre secciones
+                    });
+                
+                    // Agregar gráficos
+                    Object.entries(graficos).forEach(([titulo, imagen]) => {
+                        const imageId = workbook.addImage({
+                            base64: imagen,
+                            extension: "png",
+                        });
+                
+                        // Agregar imagen del gráfico
+                        worksheetRedes.addImage(imageId, {
+                            tl: { col: 0, row: currentRow },
+                            ext: { width: 500, height: 300 }, // Tamaño del gráfico
+                        });
+                
+                        currentRow += 20; // Espacio después del gráfico
+                    });
+                
+                    // Ajustar ancho de columnas automáticamente
+                    worksheetRedes.columns.forEach((column) => {
+                        let maxLength = 2; // Longitud mínima
+                        column.eachCell({ includeEmpty: true }, (cell) => {
+                            const value = cell.value ? cell.value.toString() : "";
+                            maxLength = Math.max(maxLength, value.length);
+                        });
+                        column.width = maxLength + 2;
+                    });
+                }
+                
+                async function agregarVentasAlExcel(workbook) {
+                    const ventasData = localStorage.getItem("reporteVentas");
+                    if (!ventasData) {
+                        console.warn("No hay datos de Ventas disponibles para agregar.");
+                        return;
+                    }
+                
+                    const { secciones, graficos } = JSON.parse(ventasData);
+                    const worksheetVentas = workbook.addWorksheet("Ventas");
+                    let currentRow = 1;
+                
+                                        // Procesar las secciones de datos
+                    secciones.forEach(({ titulo, datos }) => {
+                        // Agregar título de la sección
+                        worksheetVentas.getCell(`A${currentRow}`).value = titulo;
+                        worksheetVentas.getCell(`A${currentRow}`).font = { name: 'Cambria', size: 14, bold: true, color: { argb: '000000' } };
+                        worksheetVentas.getCell(`A${currentRow}`).alignment = { vertical: "middle", horizontal: "center" };
+                        worksheetVentas.getCell(`A${currentRow}`).fill = {
+                            type: "pattern",
+                            pattern: "solid",
+                            fgColor: { argb: 'FFF36D' },
+                        };
+
+                        currentRow++;
+
+                        // Agregar encabezados
+                        const encabezados = ["Nombre del Personal", "Cantidad de Ventas"];
+                        const headerRow = worksheetVentas.addRow(encabezados);
+
+                        // Aplicar estilos solo a las celdas que contienen los encabezados
+                        headerRow.eachCell((cell, colNumber) => {
+                            // Pintar solo las celdas que corresponden a los encabezados
+                            cell.font = { name: 'Garamond', size: 12, color: { argb: '000000' } };
+                            cell.alignment = { vertical: "middle", horizontal: "center" };
+                            cell.fill = {
+                                type: "pattern",
+                                pattern: "solid",
+                                fgColor: { argb: "FFA5E5A1" }, // Verde claro
+                            };
+                            cell.border = {
+                                top: { style: "thin", color: { argb: "000000" } },
+                                left: { style: "thin", color: { argb: "000000" } },
+                                bottom: { style: "thin", color: { argb: "000000" } },
+                                right: { style: "thin", color: { argb: "000000" } },
+                            };
+                        });
+
+                        currentRow++;
+
+                        // Agregar datos
+                        datos.forEach((fila) => {
+                            const dataRow = worksheetVentas.addRow(fila);
+                            dataRow.font = { name: 'Garamond', size: 12, color: { argb: '000000' } };
+                            dataRow.eachCell((cell, colNumber) => {
+                                const isEvenRow = currentRow % 2 === 0;
+                                cell.fill = {
+                                    type: "pattern",
+                                    pattern: "solid",
+                                    fgColor: { argb: isEvenRow ? "F5F5F5" : "FFFFFF" },
+                                };
+                                cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "left" : "center", wrapText: true };
+                                cell.border = {
+                                    top: { style: "thin", color: { argb: "000000" } },
+                                    left: { style: "thin", color: { argb: "000000" } },
+                                    bottom: { style: "thin", color: { argb: "000000" } },
+                                    right: { style: "thin", color: { argb: "000000" } },
+                                };
+                            });
+                            currentRow++;
+                        });
+
+                        currentRow += 2; // Espacio entre secciones
+                    });
+
+                
+                    // Agregar gráfico
+                    if (graficos["Gráfico de Ventas"]) {
+                        const imageId = workbook.addImage({
+                            base64: graficos["Gráfico de Ventas"],
+                            extension: "png",
+                        });
+                
+                        worksheetVentas.addImage(imageId, {
+                            tl: { col: 0, row: currentRow },
+                            ext: { width: 500, height: 300 },
+                        });
+                
+                        currentRow += 20; // Espacio después del gráfico
+                    }
+                
+                    // Ajustar ancho de columnas
+                    worksheetVentas.columns.forEach((column) => {
+                        let maxLength = 8;
+                        column.eachCell({ includeEmpty: true }, (cell) => {
+                            const value = cell.value ? cell.value.toString() : "";
+                            maxLength = Math.max(maxLength, value.length);
+                        });
+                        column.width = maxLength + 2;
+                    });
+                }                
+
+                async function agregarVentasVirtualesAlExcel(workbook) {
+                    const ventasVirtualesData = localStorage.getItem("reporteVentasVirtuales");
+                    if (!ventasVirtualesData) {
+                        console.warn("No hay datos de Ventas Virtuales disponibles para agregar.");
+                        return;
+                    }
+                
+                    const { secciones, graficos } = JSON.parse(ventasVirtualesData);
+                    const worksheetVentasVirtuales = workbook.addWorksheet("Ventas Virtuales");
+                    let currentRow = 1;
+                
+                    // Procesar las secciones de datos
+                    secciones.forEach(({ titulo, datos }) => {
+                        // Agregar título de la sección
+                        worksheetVentasVirtuales.getCell(`A${currentRow}`).value = titulo;
+                        worksheetVentasVirtuales.getCell(`A${currentRow}`).font = { name: 'Cambria', size: 14, bold: true, color: { argb: '000000' } };
+                        worksheetVentasVirtuales.getCell(`A${currentRow}`).alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+                        worksheetVentasVirtuales.getCell(`A${currentRow}`).fill = {
+                            type: "pattern",
+                            pattern: "solid",
+                            fgColor: { argb: 'FFF36D' },
+                        };
+                
+                        currentRow++;
+                
+                        // Agregar encabezados
+                        const encabezados = ["Sucursal", "Ventas"];
+                        const headerRow = worksheetVentasVirtuales.addRow(encabezados);
+                       
+                        headerRow.eachCell((cell, colNumber) => {
+                            cell.font = { name: 'Garamond', size: 12, color: { argb: '000000' } };
+                            cell.alignment = { vertical: "middle", horizontal: "center" };
+                            cell.fill = {
+                                type: "pattern",
+                                pattern: "solid",
+                                fgColor: { argb: "FFA5E5A1" },
+                            };
+                            cell.border = {
+                                top: { style: "thin", color: { argb: "000000" } },
+                                left: { style: "thin", color: { argb: "000000" } },
+                                bottom: { style: "thin", color: { argb: "000000" } },
+                                right: { style: "thin", color: { argb: "000000" } },
+                            };
+                        });
+                
+                        currentRow++;
+                
+                        // Agregar datos
+                        datos.forEach((fila) => {
+                            const dataRow = worksheetVentasVirtuales.addRow(fila);
+                            dataRow.font = { name: 'Garamond', size: 12, color: { argb: '000000' } };
+                            dataRow.eachCell((cell, colNumber) => {
+                                const isEvenRow = currentRow % 2 === 0;
+                                cell.fill = {
+                                    type: "pattern",
+                                    pattern: "solid",
+                                    fgColor: { argb: isEvenRow ? "F5F5F5" : "FFFFFF" },
+                                };
+                                cell.alignment = { vertical: "middle", horizontal: colNumber === 1 ? "left" : "center", wrapText: true };
+                                cell.border = {
+                                    top: { style: "thin", color: { argb: "000000" } },
+                                    left: { style: "thin", color: { argb: "000000" } },
+                                    bottom: { style: "thin", color: { argb: "000000" } },
+                                    right: { style: "thin", color: { argb: "000000" } },
+                                };
+                            });
+                            currentRow++;
+                        });
+                
+                        currentRow += 2; // Espacio entre secciones
+                    });
+                
+                    // Agregar gráfico
+                    if (graficos["Gráfico de Ventas Virtuales"]) {
+                        const imageId = workbook.addImage({
+                            base64: graficos["Gráfico de Ventas Virtuales"],
+                            extension: "png",
+                        });
+                
+                        worksheetVentasVirtuales.addImage(imageId, {
+                            tl: { col: 0, row: currentRow },
+                            ext: { width: 500, height: 300 },
+                        });
+                
+                        currentRow += 20; // Espacio después del gráfico
+                    }
+                
+                    // Ajustar ancho de columnas
+                    worksheetVentasVirtuales.columns.forEach((column) => {
+                        let maxLength = 8;
+                        column.eachCell({ includeEmpty: true }, (cell) => {
+                            const value = cell.value ? cell.value.toString() : "";
+                            maxLength = Math.max(maxLength, value.length);
+                        });
+                        column.width = maxLength + 2;
+                    });
+                }                                
+ 
+                // Agregar datos de Whaticket
+                await agregarWhaticketAlExcel(workbook);
+                await agregarRedesSocialesAlExcel(workbook);
+                await agregarVentasAlExcel(workbook);
+                await agregarVentasVirtualesAlExcel(workbook);
+        
+                // Descargar el archivo Excel
+                const buffer = await workbook.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'Reporte_Tipificaciones_CallCenter.xlsx';
+                a.click();
+                URL.revokeObjectURL(url);
+            });
+        </script>
+        
+
+                
+    {% endif %}
+{% endblock %}
