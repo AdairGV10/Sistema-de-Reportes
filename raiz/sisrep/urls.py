@@ -21,8 +21,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('', include('core.urls')),
-    path('', auth_views.LoginView.as_view(), name='login'),
+    path('', include('sisrep.core.urls')),
+ #   path('', auth_views.LoginView.as_view(), name='login'),
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
