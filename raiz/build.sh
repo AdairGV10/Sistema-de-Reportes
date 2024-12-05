@@ -2,11 +2,9 @@
 # Exit on error
 set -o errexit
 
-# Modify this line as needed for your package manager (pip, poetry, etc.)
+#!/bin/bash
+cd ../   # Cambia al directorio raíz del proyecto, fuera de 'sisrep/'
 pip install -r requirements.txt
-
-# Convert static asset files
-python manage.py collectstatic --no-input
-
-# Apply any outstanding database migrations
+cd sisrep  # Regresa a sisrep para ejecutar los siguientes comandos
+python manage.py collectstatic --noinput
 python manage.py migrate
