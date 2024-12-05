@@ -142,5 +142,5 @@ LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'login'
 
 STATICFILES_DIRS = [
-    BASE_DIR / "core/static",
+    BASE_DIR / "sisrep/core/static",
 ]
