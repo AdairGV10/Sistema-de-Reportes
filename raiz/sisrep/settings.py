@@ -144,3 +144,7 @@ LOGOUT_REDIRECT_URL = 'login'
 STATICFILES_DIRS = [
     BASE_DIR / "sisrep/core/static",
 ]
+
+
+# Define the STATIC_ROOT
+STATIC_ROOT = BASE_DIR / 'staticfiles'
