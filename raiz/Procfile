@@ -1,1 +1,1 @@
-web: gunicorn sisrep.wsgi:application
+web: gunicorn sisrep.asgi:application -k uvicorn.workers.UvicornWorker
