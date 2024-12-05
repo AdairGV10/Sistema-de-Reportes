@@ -58,7 +58,7 @@ MIDDLEWARE = [
 ]
 
 
-ROOT_URLCONF = 'sisrep.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATES = [
     {
@@ -78,7 +78,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'sisrep.wsgi.application'
+WSGI_APPLICATION = 'wsgi.application'
 
 
 # Database
