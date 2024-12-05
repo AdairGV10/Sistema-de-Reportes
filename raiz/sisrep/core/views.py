@@ -34,6 +34,10 @@ from collections import defaultdict
 
 class CustomLoginView(LoginView):
     template_name = 'registration/login.html'
+    
+    def form_invalid(self, form):
+        messages.error(self.request, "Credenciales incorrectas. Por favor, intenta de nuevo.")
+        return super().form_invalid(form)
 
 def home(request):
 

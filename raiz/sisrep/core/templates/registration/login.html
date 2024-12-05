@@ -24,6 +24,13 @@
                 {{ form.password }}
             </div>
             <button type="submit">Iniciar sesión</button>
+            {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                        <div class="alert alert-danger">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
         </form>
     </div>
 </body>
